@@ -1,0 +1,66 @@
+apt-get install update
+apt-get install wget
+apt-get install git-all -y
+
+
+https://go.dev/dl/
+---------------------
+
+wget https://go.dev/dl/go1.20.1.linux-amd64.tar.gz
+
+https://go.dev/doc/install
+-----------------------
+
+rm -rf /usr/local/go && tar -C /usr/local -xzf go1.20.1.linux-amd64.tar.gz
+
+export PATH=$PATH:/usr/local/go/bin
+
+go version
+
+https://github.com/Mirantis/cri-dockerd
+---------------------------------------
+
+git clone https://github.com/Mirantis/cri-dockerd.gi
+
+
+cd cri-dockerd
+mkdir bin
+go build -o bin/cri-dockerd
+mkdir -p /usr/local/bin
+install -o root -g root -m 0755 bin/cri-dockerd /usr/local/bin/cri-dockerd
+cp -a packaging/systemd/* /etc/systemd/system
+sed -i -e 's,/usr/bin/cri-dockerd,/usr/local/bin/cri-dockerd,' /etc/systemd/system/cri-docker.service
+systemctl daemon-reload
+systemctl enable cri-docker.service
+systemctl enable --now cri-docker.socket
+
+
+
+kubeadm config images pull --cri-socket=unix:///var/run/cri-dockerd.sock
+
+kubeadm init --pod-network-cidr=192.168.0.0/16 --cri-socket=unix:///var/run/cri-dockerd.sock
+
+
+Your Kubernetes control-plane has initialized successfully!
+
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+Alternatively, if you are the root user, you can run:
+
+  export KUBECONFIG=/etc/kubernetes/admin.conf
+
+You should now deploy a pod network to the cluster.
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+Then you can join any number of worker nodes by running the following on each as root:
+
+kubeadm join 172.31.12.221:6443 --token d7idtc.i979fdymrqrgvj16 \
+        --discovery-token-ca-cert-hash sha256:7dd5d4188257ab297853f2ad31a0297a32bede1400df40e4830fb5fa2b68eb74
+
+kubectl -n kube-system get pods
+kubectl get node

@@ -1,0 +1,68 @@
+1  curl -fsSL https://get.docker.com -o get-docker.sh
+    2  sudo sh get-docker.sh
+    3  sudo groupadd docker
+    4  sudo usermod -aG docker $USER
+    5  docker run hello-world
+    6  sudo systemctl enable docker.service
+    7  sudo systemctl enable containerd.service
+    
+   
+   10  systemctl restart docker
+   11  systemctl daemon-reload
+   12  systemctl enable docker
+   13  docker info
+   14  apt-get update
+   15  apt-get install wget
+   16  apt-get install git-all -y
+   17  ls
+   18  wget https://go.dev/dl/go1.20.1.linux-amd64.tar.gz
+   19  ls
+   20  rm -rf /usr/local/go && tar -C /usr/local -xzf go1.20.1.linux-amd64.tar.gz
+   21  ls
+   22  export PATH=$PATH:/usr/local/go/bin
+   23  go version
+   24  git clone https://github.com/Mirantis/cri-dockerd.git
+   
+   
+27  cd cri-dockerd
+   
+28  mkdir bin
+   
+29  go build -o bin/cri-dockerd
+  
+ 30  mkdir -p /usr/local/bin
+  
+ 31  install -o root -g root -m 0755 bin/cri-dockerd /usr/local/bin/cri-dockerd
+  
+ 32  cp -a packaging/systemd/* /etc/systemd/system
+   
+33  sed -i -e 's,/usr/bin/cri-dockerd,/usr/local/bin/cri-dockerd,' /etc/systemd/system/cri-docker.service
+   
+34  systemctl daemon-reload
+   
+35  systemctl enable cri-docker.service
+   
+36  systemctl enable --now cri-docker.socket
+   
+37  sudo apt-get update
+   
+38  sudo apt-get install -y apt-transport-https ca-certificates curl
+   
+
+   41  sudo curl -fsSLo /etc/apt/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+
+   42  echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+   43  sudo apt-get update
+
+   44  sudo apt-get install -y kubelet kubeadm kubectl
+
+   45  sudo apt-mark hold kubelet kubeadm kubectl
+
+   46  kubeadm join 172.31.0.118:6443 --token s7p8kb.9h16nd7utd5xipuk         --discovery-token-ca-cert-hash sha256:f1b27092c853c575beeec5c655ac058d43a9c3bcf1b489e2f53babd823f3698f
+
+   47  kubeadm config images pull --cri-socket=unix:///var/run/cri-dockerd.sock
+
+   48  kubeadm join 172.31.0.118:6443 --token s7p8kb.9h16nd7utd5xipuk         --discovery-token-ca-cert-hash sha256:f1b27092c853c575beeec5c655ac058d43a9c3bcf1b489e2f53babd823f3698f  --cri-socket=unix:///var/run/cri-dockerd.sock
+
+   49  history
